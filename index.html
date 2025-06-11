@@ -819,9 +819,31 @@
         }
         
         .assistant-content {
-            color: #1f2329;
+            font-size: 14px;
+            color: #666;
             line-height: 1.6;
-            font-size: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 8px;
+            margin-bottom: 20px;
+        }
+
+        .assistant-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .assistant-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .assistant-content::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .assistant-content::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
         }
         
         .assistant-content p {
@@ -975,6 +997,53 @@
             transform: none;
         }
 
+        .assistant-content::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        .assistant-intro {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #007bff;
+        }
+
+        .assistant-intro p {
+            margin: 0 0 10px 0;
+            font-weight: 500;
+        }
+
+        .assistant-examples ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .assistant-examples li {
+            margin: 5px 0;
+            color: #007bff;
+            cursor: pointer;
+        }
+
+        .assistant-examples li:hover {
+            text-decoration: underline;
+        }
+
+        .assistant-tip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #1976d2;
+        }
+
+        .assistant-messages {
+            min-height: 100px;
+        }
 
     </style>
 </head>
@@ -1470,19 +1539,25 @@
             </div>
             
             <div class="assistant-content">
-                <p>您好！我是商业模式规划助手。您可以问我任何关于商业模式的问题，例如：</p>
-                
-                <div class="assistant-examples">
-                    <ul>
-                        <li>"渠道通路应该怎么填？"</li>
-                        <li>"客户购买产品/服务的目的有哪些？"</li>
-                        <li>"客户细分要考虑哪些维度？"</li>
-                    </ul>
+                <div class="assistant-intro">
+                    <p>您好！我是商业模式规划助手。您可以问我任何关于商业模式的问题，例如：</p>
+                    
+                    <div class="assistant-examples">
+                        <ul>
+                            <li>"渠道通路应该怎么填？"</li>
+                            <li>"客户购买产品/服务的目的有哪些？"</li>
+                            <li>"客户细分要考虑哪些维度？"</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="assistant-tip">
+                        <i class="fas fa-lightbulb"></i>
+                        <div>提示：您也可以复制问题中的术语来获取详细解释</div>
+                    </div>
                 </div>
                 
-                <div class="assistant-tip">
-                    <i class="fas fa-lightbulb"></i>
-                    <div>提示：您也可以复制问题中的术语来获取详细解释</div>
+                <div class="assistant-messages">
+                    <!-- 对话消息将在这里显示 -->
                 </div>
             </div>
             
@@ -1730,8 +1805,20 @@
                     <div class="message-text">${content}</div>
                 </div>
             `;
-            assistantContent.insertBefore(messageDiv, assistantContent.firstChild);
-            messageDiv.scrollIntoView({ behavior: 'smooth' });
+            
+            // 查找消息容器
+            const messageContainer = assistantContent.querySelector('.assistant-messages') || (() => {
+                const container = document.createElement('div');
+                container.className = 'assistant-messages';
+                assistantContent.appendChild(container);
+                return container;
+            })();
+            
+            // 将新消息添加到底部
+            messageContainer.appendChild(messageDiv);
+            
+            // 滚动到底部
+            assistantContent.scrollTop = assistantContent.scrollHeight;
         }
 
         // 发送消息到服务器
@@ -1911,6 +1998,22 @@
                 });
             });
         }
+
+        // 添加示例问题点击事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const exampleQuestions = document.querySelectorAll('.assistant-examples li');
+            const messageInput = document.getElementById('messageInput');
+            
+            exampleQuestions.forEach(question => {
+                question.addEventListener('click', function() {
+                    const questionText = this.textContent.replace(/"/g, '');
+                    messageInput.value = questionText;
+                    messageInput.focus();
+                });
+            });
+        });
+
+        // 发送消息
     </script>
 </body>
 </html>
