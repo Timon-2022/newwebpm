@@ -942,6 +942,40 @@
                 height: 50px;
             }
         }
+
+        .canvas-footer {
+            margin-top: 16px;
+            text-align: center;
+            padding-top: 12px;
+            border-top: 1px solid #e5e6eb;
+        }
+
+        .export-canvas-btn {
+            background: #d43d3d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .export-canvas-btn:hover {
+            background: #b02f2f;
+            transform: translateY(-1px);
+        }
+
+        .export-canvas-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+
     </style>
 </head>
 <body>
@@ -1415,6 +1449,11 @@
                     </div>
                 </div>
             </div>
+            <div class="canvas-footer">
+                <button id="exportCanvasBtn" class="export-canvas-btn">
+                    <i class="fas fa-download"></i> 导出PNG图片
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1673,47 +1712,6 @@
             }
         });
         
-        // 导出PDF功能（暂时注释掉，因为按钮已移除）
-        /*
-        document.getElementById('exportBtn').addEventListener('click', function() {
-            const canvasElement = document.getElementById('businessCanvas');
-            
-            // 显示加载状态
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...';
-            this.disabled = true;
-            
-            html2canvas(canvasElement, {
-                scale: 2,
-                useCORS: true,
-                logging: false
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jspdf.jsPDF({
-                    orientation: 'landscape',
-                    unit: 'mm',
-                    format: 'a4'
-                });
-                
-                const imgWidth = 280;
-                const imgHeight = canvas.height * imgWidth / canvas.width;
-                
-                pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-                pdf.save('商业画布.pdf');
-                
-                // 恢复按钮状态
-                this.innerHTML = '<i class="fas fa-download"></i> 导出PDF';
-                this.disabled = false;
-            }).catch(error => {
-                console.error('导出PDF时出错:', error);
-                alert('导出PDF失败，请重试');
-                
-                // 恢复按钮状态
-                this.innerHTML = '<i class="fas fa-download"></i> 导出PDF';
-                this.disabled = false;
-            });
-        });
-        */
-
         // 小助手交互功能
         const assistantContent = document.querySelector('.assistant-content');
         const assistantInput = document.querySelector('.assistant-input');
@@ -1871,6 +1869,48 @@
             }
         `;
         document.head.appendChild(style);
+
+        // 导出PNG功能
+        const exportCanvasBtn = document.getElementById('exportCanvasBtn');
+        if (exportCanvasBtn) {
+            exportCanvasBtn.addEventListener('click', function() {
+                const canvasElement = document.getElementById('businessCanvas');
+                const exportBtn = this;
+                
+                // 显示加载状态
+                exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...';
+                exportBtn.disabled = true;
+                
+                // 使用html2canvas生成PNG图片
+                html2canvas(canvasElement, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                }).then(canvas => {
+                    // 创建下载链接
+                    const link = document.createElement('a');
+                    link.download = '商业模式画布.png';
+                    link.href = canvas.toDataURL('image/png');
+                    
+                    // 触发下载
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // 恢复按钮状态
+                    exportBtn.innerHTML = '<i class="fas fa-download"></i> 导出PNG图片';
+                    exportBtn.disabled = false;
+                }).catch(error => {
+                    console.error('导出PNG时出错:', error);
+                    alert('导出图片失败，请重试');
+                    
+                    // 恢复按钮状态
+                    exportBtn.innerHTML = '<i class="fas fa-download"></i> 导出PNG图片';
+                    exportBtn.disabled = false;
+                });
+            });
+        }
     </script>
 </body>
 </html>
