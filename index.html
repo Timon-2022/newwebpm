@@ -1649,6 +1649,7 @@
                 assistantSendButton.disabled = true;
                 assistantSendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
+                console.log('发送消息:', message);
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: {
@@ -1657,18 +1658,32 @@
                     body: JSON.stringify({ message })
                 });
 
+                const data = await response.json();
+                
                 if (!response.ok) {
-                    throw new Error('服务器响应错误');
+                    console.error('API 错误:', {
+                        status: response.status,
+                        data: data
+                    });
+                    throw new Error(data.details || '服务器响应错误');
                 }
 
-                const data = await response.json();
+                console.log('收到响应:', data);
                 addMessage(data.reply);
                 chatHistory.push({ role: 'user', content: message });
                 chatHistory.push({ role: 'assistant', content: data.reply });
 
             } catch (error) {
                 console.error('发送消息失败:', error);
-                addMessage('抱歉，我遇到了一些问题，请稍后再试。', false);
+                let errorMessage = '抱歉，我遇到了一些问题，请稍后再试。';
+                
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage = '网络连接失败，请检查您的网络连接。';
+                } else if (error.message.includes('API key')) {
+                    errorMessage = 'API 密钥无效或已过期，请联系管理员。';
+                }
+                
+                addMessage(errorMessage, false);
             } finally {
                 assistantSendButton.disabled = false;
                 assistantSendButton.innerHTML = '发送';
