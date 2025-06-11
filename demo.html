@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商业模式现状梳理工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            color: #1f2329;
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* 侧边栏样式 - 修改为白色 */
+        .sidebar {
+            width: 280px;
+            background: white; /* 改为白色背景 */
+            color: #1f2329; /* 文字颜色改为深色 */
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            box-shadow: 3px 0 15px rgba(0,0,0,0.1);
+            z-index: 100;
+            border-right: 1px solid #e5e6eb; /* 添加右边框 */
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1); /* 调整边框颜色 */
+            margin-bottom: 15px;
+        }
+        
+        .sidebar-header h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            color: #1f2329; /* 文字颜色改为深色 */
+        }
+        
+        .new-chat-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 15px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .new-chat-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .chat-history {
+            overflow-y: auto;
+            flex: 1;
+            padding: 0 15px;
+        }
+        
+        .chat-title {
+            background: rgba(0,0,0,0.05); /* 调整背景色 */
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #1f2329; /* 文字颜色改为深色 */
+        }
+        
+        .chat-title:hover {
+            background: rgba(0,0,0,0.08); /* 调整悬停背景色 */
+        }
+        
+        .chat-title.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .chat-title .date {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .delete-chat {
+            background: none;
+            border: none;
+            color: rgba(0,0,0,0.5); /* 调整删除按钮颜色 */
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 5px;
+        }
+        
+        .delete-chat:hover {
+            color: #1f2329; /* 悬停颜色改为深色 */
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .container {
+            flex: 1;
+            max-width: 1100px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            width: calc(100% - 40px);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #d43d3d, #b83333);
+            color: white;
+            padding: 32px 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .form-section {
+            padding: 40px;
+            border-bottom: 1px solid #e5e6eb;
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e5e6eb;
+        }
+        
+        .section-title .number {
+            background: #d43d3d;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .section-title h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2329;
+        }
+        
+        .form-group {
+            margin-bottom: 32px;
+        }
+        
+        .form-group h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1f2329;
+            position: relative;
+            padding-left: 10px;
+        }
+        
+        .form-group h3:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 5px;
+            height: 16px;
+            width: 4px;
+            background: #d43d3d;
+            border-radius: 2px;
+        }
+        
+        .form-group p {
+            font-size: 14px;
+            color: #646a73;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        
+        .form-group .example {
+            background: #f2f3f8;
+            border-left: 3px solid #d43d3d;
+            padding: 12px 16px;
+            margin: 12px 0 16px;
+            border-radius: 0 4px 4px 0;
+            font-size: 13px;
+            color: #646a73;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #dcdee5;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            color: #1f2329;
+            transition: all 0.2s ease;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #d43d3d;
+            box-shadow: 0 0 0 2px rgba(212, 61, 61, 0.2);
+            background-color: #fff;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .sub-section {
+            padding-left: 24px;
+            border-left: 2px solid #e5e6eb;
+            margin-top: 20px;
+        }
+        
+        .btn-container {
+            padding: 30px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        
+        .report-name {
+            flex: 1;
+        }
+        
+        .submit-btn {
+            background: #d43d3d;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 16px;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(212, 61, 61, 0.25);
+            white-space: nowrap;
+        }
+        
+        .submit-btn:hover {
+            background: #b02f2f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(212, 61, 61, 0.35);
+        }
+        
+        .submit-btn i {
+            margin-right: 8px;
+        }
+        
+        .footer-note {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #8f959e;
+            background: #fafafa;
+            border-top: 1px solid #e5e6eb;
+        }
+        
+        /* 基本信息布局 */
+        .basic-info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .basic-info .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        /* 必填标记 */
+        .required:after {
+            content: " *";
+            color: #ff4d4f;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 230px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .header {
+                padding: 24px 20px;
+            }
+            
+            .form-section {
+                padding: 30px 20px;
+            }
+            
+            .section-title h2 {
+                font-size: 18px;
+            }
+            
+            .btn-container {
+                padding: 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .report-name {
+                width: 100%;
+            }
+            
+            .submit-btn {
+                width: 100%;
+            }
+            
+            .basic-info {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+        
+        /* 进度条 */
+        .progress-container {
+            padding: 0 40px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e5e6eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #d43d3d, #b83333);
+            width: 10%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        /* 表单组动画 */
+        .form-group {
+            transition: transform 0.3s ease;
+        }
+        
+        .form-group:focus-within {
+            transform: translateY(-3px);
+        }
+        
+        /* 报告区域样式 */
+        .report-section {
+            padding: 40px;
+            background: #f9fafb;
+            border-top: 1px solid #e5e6eb;
+            display: none;
+        }
+        
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .report-header h2 {
+            font-size: 24px;
+            color: #1f2329;
+        }
+        
+        .download-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            background: #219653;
+            transform: translateY(-2px);
+        }
+        
+        .report-content {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            line-height: 1.8;
+        }
+        
+        .report-section h3 {
+            color: #d43d3d;
+            margin: 25px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .report-section p {
+            margin-bottom: 15px;
+        }
+        
+        .report-section ul {
+            padding-left: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .report-section li {
+            margin-bottom: 10px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #27ae60;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+        
+        .saving-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .auto-save {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(212, 61, 61, 0.1);
+            color: #d43d3d;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* 新增商业画布悬浮按钮样式 */
+        .floating-btn-container {
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            z-index: 1000;
+        }
+        
+        .floating-btn {
+            background: #d43d3d;
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(212, 61, 61, 0.25);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.2;
+            text-align: center;
+            z-index: 1001;
+        }
+        
+        .floating-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(212, 61, 61, 0.35);
+        }
+        
+        .business-canvas {
+            position: fixed;
+            right: 100px;
+            bottom: 30px;
+            background: white;
+            border: 1px solid #e5e6eb;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            width: 700px;
+            max-width: calc(100% - 160px);
+            z-index: 999;
+            transform: translateY(20px);
+        }
+        
+        .floating-btn-container:hover .business-canvas {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .business-canvas:hover {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .canvas-header {
+            grid-column: 1 / -1;
+            margin-bottom: 12px;
+        }
+        
+        .canvas-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #d43d3d;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #d43d3d;
+        }
+        
+        .canvas-section {
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 12px;
+            background: #fff;
+            transition: all 0.2s ease;
+            min-height: 140px;
+        }
+        
+        .canvas-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .canvas-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #d43d3d;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 6px;
+        }
+        
+        .canvas-section p {
+            font-size: 13px;
+            color: #1f2329;
+            line-height: 1.6;
+            margin-bottom: 4px;
+        }
+        
+        .export-btn {
+            grid-column: 3 / 4;
+            text-align: right;
+            margin-top: 12px;
+        }
+        
+        .export-btn button {
+            background: #d43d3d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .export-btn button:hover {
+            background: #b02f2f;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .business-canvas {
+                grid-template-columns: repeat(2, 1fr);
+                width: calc(100% - 120px);
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+            
+            .canvas-header {
+                grid-column: 1 / -1;
+            }
+            
+            .export-btn {
+                grid-column: 1 / -1;
+                text-align: center;
+            }
+        }
+
+        /* 小助手悬浮框样式 */
+        .assistant-container {
+            position: fixed;
+            bottom: 120px;
+            right: 40px;
+            z-index: 1000;
+        }
+        
+        .assistant-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3370ff 0%, #00c6ff 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(51, 112, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .assistant-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 24px rgba(51, 112, 255, 0.6);
+        }
+        
+        .assistant-button i {
+            font-size: 24px;
+        }
+        
+        .assistant-dialog {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 450px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 12px 32px rgba(31, 35, 41, 0.15);
+            padding: 24px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+        
+        .assistant-container:hover .assistant-dialog {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .assistant-dialog:hover {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .assistant-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #dee0e3;
+        }
+        
+        .assistant-header h3 {
+            font-size: 18px;
+            color: #1f2329;
+            font-weight: 600;
+        }
+        
+        .assistant-header i {
+            margin-right: 12px;
+            color: #3370ff;
+            font-size: 20px;
+        }
+        
+        .assistant-content {
+            color: #1f2329;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        
+        .assistant-content p {
+            margin-bottom: 16px;
+        }
+        
+        .assistant-examples {
+            background: #f7f8fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+        
+        .assistant-examples li {
+            margin-bottom: 12px;
+            padding-left: 0;
+            position: relative;
+            color: #646a73;
+            transition: all 0.2s ease;
+            list-style-type: none;
+        }
+        
+        .assistant-examples li:hover {
+            color: #3370ff;
+            cursor: pointer;
+            background: #e8f3ff;
+            border-radius: 4px;
+            padding: 6px 8px;
+        }
+        
+        .assistant-tip {
+            background: #e8f3ff;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            color: #3370ff;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .assistant-tip i {
+            margin-top: 2px;
+        }
+        
+        .assistant-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #dee0e3;
+        }
+        
+        .assistant-input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 1px solid #dee0e3;
+            border-radius: 8px;
+            margin-right: 12px;
+            font-size: 15px;
+            outline: none;
+            transition: border 0.2s;
+            height: 50px;
+        }
+        
+        .assistant-input:focus {
+            border-color: #3370ff;
+            box-shadow: 0 0 0 2px rgba(51, 112, 255, 0.2);
+        }
+        
+        .assistant-send-button {
+            background: #3370ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 15px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .assistant-send-button:hover {
+            background: #245bdb;
+        }
+        
+        .assistant-arrow {
+            position: absolute;
+            bottom: -10px;
+            right: 25px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            transform: rotate(45deg);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .assistant-container {
+                bottom: 100px;
+                right: 20px;
+            }
+            
+            .assistant-dialog {
+                width: 360px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .assistant-dialog {
+                width: 300px;
+            }
+            
+            .assistant-button {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 侧边栏 - 简化为一个对话 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-chart-line"></i> 商业模式分析</h2>
+        </div>
+        
+        <button class="new-chat-btn">
+            <i class="fas fa-plus"></i> 新建商业模式分析
+        </button>
+        
+        <div class="chat-history">
+            <h3 style="padding: 0 15px 10px; font-weight: 500; opacity: 0.9;">当前分析记录</h3>
+            <div class="chat-title active">
+                <div>
+                    <div id="current-chat-title">商业模式分析</div>
+                    <div class="date">2023-10-15</div>
+                </div>
+                <button class="delete-chat"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 主内容区域 -->
+    <div class="main-content">
+        <div class="auto-save">
+            <i class="fas fa-sync-alt"></i> 自动保存已开启
+        </div>
+        
+        <div class="container">
+            <div class="header">
+                <h1>商业模式现状梳理</h1>
+                <p>填写以下表格，AI将自动为您生成商业模式优化建议</p>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress" id="progress"></div>
+                </div>
+            </div>
+            
+            <form id="business-model-form">
+                <!-- 基本信息 - 左右结构 -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <div class="number"><i class="fas fa-user"></i></div>
+                        <h2>基本信息</h2>
+                    </div>
+                    
+                    <div class="basic-info">
+                        <div class="form-group">
+                            <h3 class="required">您的姓名</h3>
+                            <input type="text" id="user-name" placeholder="请输入您的姓名" value="">
+                        </div>
+                        
+                        <div class="form-group">
+                            <h3 class="required">公司名称</h3>
+                            <input type="text" id="company-name" placeholder="请输入您的公司名称" value="">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 价值主张 -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <div class="number">1</div>
+                        <h2>价值主张</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>价值卖点</h3>
+                        <p>您的主营业务是什么？</p>
+                        <input type="text" id="main-business" placeholder="请输入主营业务" value="">
+                        
+                        <p style="margin-top: 16px;">您的服务/产品主要解决客户哪些核心问题或需求？有什么独特的地方？</p>
+                        <textarea id="value-proposition" placeholder="请描述您的价值主张..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>内容</h3>
+                        <p>产品或服务有哪些？按照主要种类列举</p>
+                        <textarea id="products-services" placeholder="请列举您的产品或服务..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- 客户细分 -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <div class="number">2</div>
+                        <h2>客户细分</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>核心客户群体</h3>
+                        <p>您的核心客户是哪些群体？请用地域、行业（2B）/身份（2C）、规模、渠道等至少4个维度描述</p>
+                        <div class="example">
+                            <strong>示例：</strong> 常见划分维度有：地域、行业、身份、特征、规模、收入、渠道、场景
+                        </div>
+                        <textarea id="core-customers" placeholder="请从地域、行业/身份、规模、渠道等维度描述您的核心客户"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>客户分布特点</h3>
+                        <p>您的客户的分布有什么特点？</p>
+                        <div class="example">
+                            <strong>示例：</strong> 如按照区域划分：长三角制造业集群&分散的中西部客户；按照年龄+地域划分：一线城市95后白领，等等
+                        </div>
+                        <textarea id="customer-distribution" placeholder="请描述客户分布的特点"></textarea>
+                    </div>
+                </div>
+                
+                <!-- 渠道通路 -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <div class="number">3</div>
+                        <h2>渠道通路</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>渠道触达</h3>
+                        <p>您当前通过哪些渠道触达客户？请列出您所有的线上线下渠道</p>
+                        <div class="example">
+                            <strong>示例：</strong> 常见线上渠道：抖音、小红书、视频号、电商平台如淘宝京东等；常见线下渠道：线下门店、商超、批发市场、行业展会等
+                        </div>
+                        <input type="text" id="channels" placeholder="请列出渠道" value="">
+                        
+                        <div class="sub-section">
+                            <h3>自有渠道</h3>
+                            <p>有哪些是自营？</p>
+                            <div class="example">
+                                <strong>示例：</strong> 自有销售团队，自营淘宝/京东网店
+                            </div>
+                            <textarea id="own-channels" placeholder="请列出自营渠道"></textarea>
+                        </div>
+                        
+                        <div class="sub-section">
+                            <h3>他有渠道</h3>
+                            <p>有哪些委托别人与他人合作？</p>
+                            <div class="example">
+                                <strong>示例：</strong> 小红书KOL，抖音达人，行业协会、经销商代理商
+                            </div>
+                            <textarea id="partner-channels" placeholder="请列出合作渠道"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 客户关系 -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <div class="number">4</div>
+                        <h2>客户关系</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>影响（获客手法）</h3>
+                        <p>您目前的宣传手法，获客方式有哪些？有怎样的特点？</p>
+                        <div class="example">
+                            <strong>示例：</strong> 产品说明会，成功案例，老客户口碑传播，知名代言人
+                        </div>
+                        <textarea id="acquisition" placeholder="请描述您的获客方式和特点"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>锁定（留客手法）</h3>
+                        <p>您目前通过哪些具体方式与客户保持联系？如何留住客户？</p>
+                        <div class="example">
+                            <strong>示例：</strong> 微信社群、电话回访、会员积分
+                        </div>
+                        <textarea id="retention" placeholder="请描述您的留客方式"></textarea>
+                    </div>
+                </div>
+                
+                <!-- 收入来源 -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <div class="number">5</div>
+                        <h2>收入来源</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>一次性收入</h3>
+                        <p>有哪些属于一次性收入？</p>
+                        <div class="example">
+                            <strong>示例：</strong> 传统的产品销售方式，每次交货后交易就结束了（如一次性服务收费，如软件外包，设计外包，产品设备销售）
+                        </div>
+                        <textarea id="one-time-revenue" placeholder="请描述一次性收入来源"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>使用费</h3>
+                        <p>具有长期性，绑定性，或者有固定的载体，按照使用状况分计量、计次、计时收费</p>
+                        <div class="example">
+                            <strong>示例：</strong> 计量-水费，电费 / 计次-健身计次卡，施乐复印机按照打印张数收费 / 计时-房屋租金，付费保修服务，山姆会员费，订阅费等
+                        </div>
+                        <textarea id="usage-fee" placeholder="请描述使用费收入"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>分享费</h3>
+                        <p>与客户或重要伙伴分成的收入，分享售后利润</p>
+                        <div class="example">
+                            <strong>示例：</strong> 房屋中介
+                        </div>
+                        <textarea id="revenue-sharing" placeholder="请描述分享费收入"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>免费模式</h3>
+                        <p>将核心或重要的产品或服务"长期"免费提供以获取独特价值</p>
+                        <div class="example">
+                            <strong>示例：</strong> 百度搜寻，抖音平台，小红书等，如果是短期免费的促销活动则放在客户关系里
+                        </div>
+                        <textarea id="free-model" placeholder="请描述免费模式"></textarea>
+                    </div>
+                </div>
+                
+                <!-- 关键活动 -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <div class="number">6</div>
+                        <h2>关键活动</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>概述</h3>
+                        <p>您当前为了公司运营实现业务的交付，必须长期持续做的事情有哪些？</p>
+                        <textarea id="key-activities" placeholder="请概述关键活动"></textarea>
+                        
+                        <div class="sub-section">
+                            <h3>自做</h3>
+                            <p>哪些是需要自己做的？</p>
+                            <div class="example">
+                                <strong>示例：</strong> 生产制造、渠道分销、售后服务
+                            </div>
+                            <textarea id="own-activities" placeholder="请列出需要自己做的关键活动"></textarea>
+                        </div>
+                        
+                        <div class="sub-section">
+                            <h3>他做</h3>
+                            <p>哪些事情是需要别人做的，由合作伙伴提供的？</p>
+                            <div class="example">
+                                <strong>示例：</strong> 原材料提供、半成品加工、分销宣传
+                            </div>
+                            <textarea id="partner-activities" placeholder="请列出由合作伙伴提供的活动"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 核心资源 -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <div class="number">7</div>
+                        <h2>核心资源</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>概述</h3>
+                        <p>您的企业当前最依赖哪些核心资源维持业务运转？</p>
+                        <div class="example">
+                            <strong>示例：</strong> 关键设备、核心技术、核心团队、客户资源、客户重要数据、知名品牌等
+                        </div>
+                        <textarea id="key-resources" placeholder="请概述核心资源"></textarea>
+                        
+                        <div class="sub-section">
+                            <h3>自有资源</h3>
+                            <p>哪些是自己的？请具体列举</p>
+                            <textarea id="own-resources" placeholder="请列出自有的核心资源"></textarea>
+                        </div>
+                        
+                        <div class="sub-section">
+                            <h3>他有资源</h3>
+                            <p>哪些由重要伙伴提供？请具体列举</p>
+                            <textarea id="partner-resources" placeholder="请列出由合作伙伴提供的资源"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 重要合作 -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <div class="number">8</div>
+                        <h2>重要合作</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>合作伙伴</h3>
+                        <p>您的企业有哪些重要的合作伙伴？</p>
+                        <div class="example">
+                            <strong>示例：</strong> 与企业有重要的长期关系，包含长期的分销与代理（如麦当劳全球代理，品牌代言人，花西子与李佳琦），产业供应链合作（如新能源汽车与电池供应商），异业联盟（如银行信用卡与旅行社合作，使用信用卡积分兑换机酒优惠），战略投资（关联子公司）为开发新业务的合资关系（如海外合资销售公司），不具有长期战略关系或者短期合作的的销售渠道只放渠道通路的地方即可
+                        </div>
+                        <textarea id="key-partners" placeholder="请描述重要的合作伙伴关系"></textarea>
+                    </div>
+                </div>
+                
+                <!-- 成本结构 -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <div class="number">9</div>
+                        <h2>成本结构</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3>概述</h3>
+                        <p>您企业的核心成本有哪些？</p>
+                        <div class="example">
+                            <strong>示例：</strong> 常见核心成本：如制造业的核心成本有直接材料、人工、设备折旧与维护、质量检测成本等；电商行业核心成本有商品采购、平台广告费与佣金、仓储、物流等成本
+                        </div>
+                        <textarea id="cost-structure" placeholder="请描述企业的核心成本"></textarea>
+                        
+                        <div class="sub-section">
+                            <h3>可变成本</h3>
+                            <p>依据使用状况变动，与盈利有关的利润/销售/项目分成，可以弹性变动支付</p>
+                            <textarea id="variable-costs" placeholder="请描述可变成本"></textarea>
+                        </div>
+                        
+                        <div class="sub-section">
+                            <h3>固定成本</h3>
+                            <p>固定的每月每年支出，有一定价格，不与企业盈利挂钩</p>
+                            <textarea id="fixed-costs" placeholder="请描述固定成本"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-container">
+                    <div class="report-name">
+                        <input type="text" id="report-name" placeholder="输入优化内容" value="">
+                    </div>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-magic"></i> 生成优化建议
+                    </button>
+                </div>
+            </form>
+            
+            <!-- 报告区域 -->
+            <div class="report-section" id="report-section">
+                <div class="report-header">
+                    <h2 id="report-title">商业模式分析报告</h2>
+                    <button class="download-btn" id="download-report">
+                        <i class="fas fa-download"></i> 下载报告
+                    </button>
+                </div>
+                
+                <div class="report-content" id="report-content">
+                    <p>报告生成时间：<span id="report-date">2023年10月15日</span></p>
+                    
+                    <h3>基本信息</h3>
+                    <p><strong>分析人：</strong> <span id="report-user-name"></span></p>
+                    <p><strong>公司名称：</strong> <span id="report-company-name"></span></p>
+                    
+                    <h3>核心分析结果</h3>
+                    <p>基于您提供的商业模式信息，我们进行了全面分析，以下是关键发现：</p>
+                    
+                    <h3>优势分析</h3>
+                    <ul id="strengths-list">
+                        <li><strong>精准的目标客户定位：</strong> 您对18-35岁年轻女性用户的定位非常清晰，特别是在一线和新一线城市的布局具有战略眼光。</li>
+                        <li><strong>多元化的收入来源：</strong> 一次性销售、订阅服务和佣金分成的组合模式有效分散了收入风险。</li>
+                        <li><strong>创新的客户获取方式：</strong> 短视频教程和KOL合作是当前美妆行业最有效的获客手段。</li>
+                        <li><strong>良好的客户留存机制：</strong> 会员积分和个性化推荐系统显著提高了客户忠诚度。</li>
+                    </ul>
+                    
+                    <h3>优化建议</h3>
+                    <ul id="recommendations-list">
+                        <li><strong>深化内容价值：</strong> 建议开发更专业的皮肤分析和化妆品成分解析工具，建立技术壁垒。</li>
+                        <li><strong>拓展用户社群：</strong> 在现有微信社群基础上，建立垂直细分社群（如敏感肌护理、彩妆技巧等）。</li>
+                        <li><strong>优化KOL合作模式：</strong> 建立KOL分级体系，头部KOL主打品牌影响力，中腰部KOL负责转化。</li>
+                        <li><strong>探索线下触点：</strong> 考虑与美妆门店合作设立"体验角"，打通线上线下闭环。</li>
+                        <li><strong>数据资产变现：</strong> 在保护用户隐私前提下，向品牌方提供行业洞察报告。</li>
+                    </ul>
+                    
+                    <h3>潜在风险预警</h3>
+                    <ul id="risks-list">
+                        <li><strong>KOL依赖风险：</strong> 当前营销过度依赖KOL，建议建立自有流量池。</li>
+                        <li><strong>同质化竞争：</strong> 美妆内容服务竞争激烈，需加强差异化。</li>
+                        <li><strong>供应链风险：</strong> 化妆品供应完全依赖合作伙伴，需建立备选供应商体系。</li>
+                    </ul>
+                    
+                    <h3>实施路线图</h3>
+                    <p><strong>第一阶段（1-3个月）：</strong> 完成用户数据系统升级，启动KOL分级计划</p>
+                    <p><strong>第二阶段（4-6个月）：</strong> 开发专业美妆分析工具，试点线下体验点</p>
+                    <p><strong>第三阶段（7-12个月）：</strong> 建立完整自有流量矩阵，探索数据变现模式</p>
+                    
+                    <div class="status-indicator">
+                        <i class="fas fa-check-circle"></i> AI分析已完成
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-note">
+                提交表单后，AI将分析您的商业模式并提供优化建议。您的数据将被安全保存，仅用于分析目的。
+            </div>
+        </div>
+    </div>
+    
+    <!-- 自动保存提示 -->
+    <div class="saving-indicator" id="saving-indicator">
+        <i class="fas fa-save"></i> 数据保存中...
+    </div>
+    
+    <!-- 悬浮商业画布按钮 -->
+    <div class="floating-btn-container">
+        <button class="floating-btn">
+            商业<br>画布
+        </button>
+        <div class="business-canvas" id="businessCanvas">
+            <div class="canvas-header">
+                <h3>商业画布</h3>
+                <p>基于您填写的商业模式信息生成的画布概览</p>
+            </div>
+            <div class="canvas-section">
+                <h4>重要伙伴</h4>
+                <p id="canvas-key-partners"></p>
+            </div>
+            <div class="canvas-section">
+                <h4>关键活动</h4>
+                <p><strong>自做:</strong> <span id="canvas-own-activities"></span></p>
+                <p><strong>他做:</strong> <span id="canvas-partner-activities"></span></p>
+            </div>
+            <div class="canvas-section">
+                <h4>关键资源</h4>
+                <p><strong>自有:</strong> <span id="canvas-own-resources"></span></p>
+                <p><strong>他有:</strong> <span id="canvas-partner-resources"></span></p>
+            </div>
+            <div class="canvas-section">
+                <h4>价值主张</h4>
+                <p id="canvas-main-business"></p>
+                <p id="canvas-value-proposition"></p>
+            </div>
+            <div class="canvas-section">
+                <h4>客户关系</h4>
+                <p><strong>影响(获客):</strong> <span id="canvas-acquisition"></span></p>
+                <p><strong>锁定(留客):</strong> <span id="canvas-retention"></span></p>
+            </div>
+            <div class="canvas-section">
+                <h4>渠道通路</h4>
+                <p><strong>自有:</strong> <span id="canvas-own-channels"></span></p>
+                <p><strong>他有:</strong> <span id="canvas-partner-channels"></span></p>
+            </div>
+            <div class="canvas-section">
+                <h4>客户细分</h4>
+                <p id="canvas-core-customers"></p>
+                <p id="canvas-customer-distribution"></p>
+            </div>
+            <div class="canvas-section">
+                <h4>成本结构</h4>
+                <p><strong>可变:</strong> <span id="canvas-variable-costs"></span></p>
+                <p><strong>固定:</strong> <span id="canvas-fixed-costs"></span></p>
+            </div>
+            <div class="canvas-section">
+                <h4>收入来源</h4>
+                <p><strong>一次性:</strong> <span id="canvas-one-time-revenue"></span></p>
+                <p><strong>使用费:</strong> <span id="canvas-usage-fee"></span></p>
+                <p><strong>分享费:</strong> <span id="canvas-revenue-sharing"></span></p>
+                <p><strong>免费模式:</strong> <span id="canvas-free-model"></span></p>
+            </div>
+            <div class="export-btn">
+                <button id="exportBtn">
+                    <i class="fas fa-download"></i> 导出PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 悬浮小助手按钮 -->
+    <div class="assistant-container">
+        <button class="assistant-button">
+            <i class="fas fa-robot"></i>
+        </button>
+        
+        <div class="assistant-dialog">
+            <div class="assistant-header">
+                <i class="fas fa-comment-dots"></i>
+                <h3>小助手</h3>
+            </div>
+            
+            <div class="assistant-content">
+                <p>您好！我是商业模式规划助手。您可以问我任何关于商业模式的问题，例如：</p>
+                
+                <div class="assistant-examples">
+                    <ul>
+                        <li>"渠道通路应该怎么填？"</li>
+                        <li>"客户购买产品/服务的目的有哪些？"</li>
+                        <li>"客户细分要考虑哪些维度？"</li>
+                    </ul>
+                </div>
+                
+                <div class="assistant-tip">
+                    <i class="fas fa-lightbulb"></i>
+                    <div>提示：您也可以复制问题中的术语来获取详细解释</div>
+                </div>
+            </div>
+            
+            <div class="assistant-footer">
+                <input type="text" class="assistant-input" placeholder="输入您的问题...">
+                <button class="assistant-send-button">发送</button>
+            </div>
+            
+            <div class="assistant-arrow"></div>
+        </div>
+    </div>
+
+    <script>
+        // 表单自动保存功能
+        const form = document.getElementById('business-model-form');
+        const inputs = form.querySelectorAll('input, textarea');
+        const savingIndicator = document.getElementById('saving-indicator');
+        let saveTimeout;
+        
+        // 自动保存函数
+        function autoSave() {
+            // 显示保存提示
+            savingIndicator.style.display = 'flex';
+            
+            // 收集表单数据
+            const formData = {};
+            inputs.forEach(input => {
+                formData[input.id] = input.value;
+            });
+            
+            // 添加报告名称
+            formData.reportName = document.getElementById('report-name').value;
+            
+            // 模拟保存到localStorage
+            localStorage.setItem('businessModelData', JSON.stringify(formData));
+            
+            // 3秒后隐藏提示
+            setTimeout(() => {
+                savingIndicator.style.display = 'none';
+            }, 2000);
+        }
+        
+        // 为所有输入元素添加事件监听
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                // 清除之前的定时器
+                clearTimeout(saveTimeout);
+                
+                // 设置新的定时器（防抖）
+                saveTimeout = setTimeout(autoSave, 1500);
+            });
+        });
+        
+        // 页面加载时恢复数据
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedData = localStorage.getItem('businessModelData');
+            if (savedData) {
+                const formData = JSON.parse(savedData);
+                
+                // 填充表单数据
+                for (const id in formData) {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.value = formData[id];
+                    }
+                }
+                
+                // 填充报告名称
+                if (formData.reportName) {
+                    document.getElementById('report-name').value = formData.reportName;
+                }
+            }
+        });
+        
+        // 表单提交处理
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.querySelector('.submit-btn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 分析中...';
+            submitBtn.disabled = true;
+            
+            // 保存当前数据
+            autoSave();
+            
+            // 设置报告标题
+            const reportName = document.getElementById('report-name').value || '商业模式分析报告';
+            document.getElementById('report-title').textContent = reportName;
+            
+            // 设置报告日期
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('report-date').textContent = now.toLocaleDateString('zh-CN', options);
+            
+            // 填充报告基本信息
+            document.getElementById('report-user-name').textContent = document.getElementById('user-name').value || '未填写';
+            document.getElementById('report-company-name').textContent = document.getElementById('company-name').value || '未填写';
+            
+            // 模拟AI分析过程
+            setTimeout(() => {
+                // 显示报告区域
+                document.getElementById('report-section').style.display = 'block';
+                
+                // 滚动到报告区域
+                document.getElementById('report-section').scrollIntoView({ behavior: 'smooth' });
+                
+                // 恢复按钮状态
+                submitBtn.innerHTML = '<i class="fas fa-magic"></i> 生成优化建议';
+                submitBtn.disabled = false;
+            }, 3000);
+        });
+        
+        // 下载报告功能
+        document.getElementById('download-report').addEventListener('click', function() {
+            const reportTitle = document.getElementById('report-title').textContent;
+            const reportContent = document.getElementById('report-content').textContent;
+            
+            const blob = new Blob([reportContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${reportTitle}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            
+            // 清理
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+        });
+        
+        // 进度条效果
+        window.addEventListener('scroll', function() {
+            const scrollPosition = window.scrollY;
+            const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scrollPosition / totalHeight) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+        });
+        
+        // 新建对话功能
+        document.querySelector('.new-chat-btn').addEventListener('click', function() {
+            if (confirm('确定要创建新的商业模式分析吗？当前数据将自动保存。')) {
+                // 清空表单
+                inputs.forEach(input => {
+                    input.value = '';
+                });
+                
+                // 清空报告名称
+                document.getElementById('report-name').value = '';
+                
+                // 隐藏报告
+                document.getElementById('report-section').style.display = 'none';
+                
+                // 滚动到顶部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // 保存清空后的表单
+                autoSave();
+                
+                // 更新侧边栏标题
+                document.getElementById('current-chat-title').textContent = '新的商业模式分析';
+            }
+        });
+        
+        // 删除聊天记录
+        document.querySelector('.delete-chat').addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (confirm('确定要删除此分析记录吗？')) {
+                // 这里可以添加删除逻辑
+                alert('分析记录已删除');
+            }
+        });
+
+        // 表单与商业画布实时同步
+        const canvasMap = {
+            'main-business': 'canvas-main-business',
+            'value-proposition': 'canvas-value-proposition',
+            'own-activities': 'canvas-own-activities',
+            'partner-activities': 'canvas-partner-activities',
+            'own-resources': 'canvas-own-resources',
+            'partner-resources': 'canvas-partner-resources',
+            'acquisition': 'canvas-acquisition',
+            'retention': 'canvas-retention',
+            'own-channels': 'canvas-own-channels',
+            'partner-channels': 'canvas-partner-channels',
+            'core-customers': 'canvas-core-customers',
+            'customer-distribution': 'canvas-customer-distribution',
+            'variable-costs': 'canvas-variable-costs',
+            'fixed-costs': 'canvas-fixed-costs',
+            'one-time-revenue': 'canvas-one-time-revenue',
+            'usage-fee': 'canvas-usage-fee',
+            'revenue-sharing': 'canvas-revenue-sharing',
+            'free-model': 'canvas-free-model',
+            'key-partners': 'canvas-key-partners'
+        };
+
+        // 为所有输入元素添加实时同步事件
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                const canvasId = canvasMap[input.id];
+                if (canvasId) {
+                    const canvasElement = document.getElementById(canvasId);
+                    if (canvasElement) {
+                        canvasElement.textContent = input.value;
+                    }
+                }
+            });
+        });
+
+        // 公司名同步到侧边栏标题
+        const companyInput = document.getElementById('company-name');
+        companyInput.addEventListener('input', () => {
+            document.getElementById('current-chat-title').textContent = 
+                `${companyInput.value || '商业模式'}分析`;
+        });
+
+        // 初始加载时同步一次
+        document.addEventListener('DOMContentLoaded', () => {
+            for (const formId in canvasMap) {
+                const formElement = document.getElementById(formId);
+                const canvasElement = document.getElementById(canvasMap[formId]);
+                if (formElement && canvasElement) {
+                    canvasElement.textContent = formElement.value;
+                }
+            }
+        });
+        
+        // 导出PDF功能
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const canvasElement = document.getElementById('businessCanvas');
+            
+            // 显示加载状态
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...';
+            this.disabled = true;
+            
+            html2canvas(canvasElement, {
+                scale: 2,
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jspdf.jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                const imgWidth = 280;
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                
+                pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+                pdf.save('商业画布.pdf');
+                
+                // 恢复按钮状态
+                this.innerHTML = '<i class="fas fa-download"></i> 导出PDF';
+                this.disabled = false;
+            }).catch(error => {
+                console.error('导出PDF时出错:', error);
+                alert('导出PDF失败，请重试');
+                
+                // 恢复按钮状态
+                this.innerHTML = '<i class="fas fa-download"></i> 导出PDF';
+                this.disabled = false;
+            });
+        });
+
+        // 小助手交互功能
+        document.querySelectorAll('.assistant-examples li').forEach(item => {
+            item.addEventListener('click', function() {
+                const question = this.textContent.replace(/"/g, '').trim();
+                document.querySelector('.assistant-input').value = question;
+                
+                // 显示发送成功的反馈
+                const sendButton = document.querySelector('.assistant-send-button');
+                sendButton.textContent = '✓ 已输入';
+                sendButton.style.background = '#00c853';
+                
+                setTimeout(() => {
+                    sendButton.textContent = '发送';
+                    sendButton.style.background = '#3370ff';
+                }, 2000);
+            });
+        });
+        
+        // 输入框聚焦效果
+        document.querySelector('.assistant-input').addEventListener('focus', function() {
+            this.parentElement.style.borderColor = '#3370ff';
+        });
+        
+        document.querySelector('.assistant-input').addEventListener('blur', function() {
+            this.parentElement.style.borderColor = '#dee0e3';
+        });
+        
+        // 发送按钮点击效果
+        document.querySelector('.assistant-send-button').addEventListener('click', function() {
+            const input = document.querySelector('.assistant-input');
+            const question = input.value.trim();
+            
+            if(question) {
+                this.textContent = '发送中...';
+                
+                // 模拟发送过程
+                setTimeout(() => {
+                    this.textContent = '✓ 已发送';
+                    this.style.background = '#00c853';
+                    input.value = '';
+                    
+                    // 2秒后恢复原状
+                    setTimeout(() => {
+                        this.textContent = '发送';
+                        this.style.background = '#3370ff';
+                    }, 2000);
+                }, 800);
+            }
+        });
+    </script>
+</body>
+</html>
