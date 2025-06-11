@@ -1968,13 +1968,76 @@
                 exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...';
                 exportBtn.disabled = true;
                 
+                // 同步表单数据到画布
+                function syncFormDataToCanvas() {
+                    // 获取表单数据
+                    const formData = {
+                        keyPartners: document.getElementById('key-partners').value || '暂无数据',
+                        ownActivities: document.getElementById('own-activities').value || '暂无数据',
+                        partnerActivities: document.getElementById('partner-activities').value || '暂无数据',
+                        mainBusiness: document.getElementById('main-business').value || '暂无数据',
+                        valueProp: document.getElementById('value-proposition').value || '暂无数据',
+                        acquisition: document.getElementById('acquisition').value || '暂无数据',
+                        retention: document.getElementById('retention').value || '暂无数据',
+                        customerDistribution: document.getElementById('customer-distribution').value || '暂无数据',
+                        coreCustomers: document.getElementById('core-customers').value || '暂无数据',
+                        ownResources: document.getElementById('own-resources').value || '暂无数据',
+                        partnerResources: document.getElementById('partner-resources').value || '暂无数据',
+                        ownChannels: document.getElementById('own-channels').value || '暂无数据',
+                        partnerChannels: document.getElementById('partner-channels').value || '暂无数据',
+                        variableCosts: document.getElementById('variable-costs').value || '暂无数据',
+                        fixedCosts: document.getElementById('fixed-costs').value || '暂无数据',
+                        oneTimeRevenue: document.getElementById('one-time-revenue').value || '暂无数据',
+                        usageFee: document.getElementById('usage-fee').value || '暂无数据',
+                        revenueSharing: document.getElementById('revenue-sharing').value || '暂无数据',
+                        freeModel: document.getElementById('free-model').value || '暂无数据'
+                    };
+                    
+                    // 同步到画布元素
+                    document.getElementById('canvas-key-partners').textContent = formData.keyPartners;
+                    document.getElementById('canvas-own-activities').textContent = formData.ownActivities;
+                    document.getElementById('canvas-partner-activities').textContent = formData.partnerActivities;
+                    document.getElementById('canvas-main-business').textContent = formData.mainBusiness;
+                    document.getElementById('canvas-value-proposition').textContent = formData.valueProp;
+                    document.getElementById('canvas-acquisition').textContent = formData.acquisition;
+                    document.getElementById('canvas-retention').textContent = formData.retention;
+                    document.getElementById('canvas-customer-distribution').textContent = formData.customerDistribution;
+                    document.getElementById('canvas-core-customers').textContent = formData.coreCustomers;
+                    document.getElementById('canvas-own-resources').textContent = formData.ownResources;
+                    document.getElementById('canvas-partner-resources').textContent = formData.partnerResources;
+                    document.getElementById('canvas-own-channels').textContent = formData.ownChannels;
+                    document.getElementById('canvas-partner-channels').textContent = formData.partnerChannels;
+                    document.getElementById('canvas-variable-costs').textContent = formData.variableCosts;
+                    document.getElementById('canvas-fixed-costs').textContent = formData.fixedCosts;
+                    document.getElementById('canvas-one-time-revenue').textContent = formData.oneTimeRevenue;
+                    document.getElementById('canvas-usage-fee').textContent = formData.usageFee;
+                    document.getElementById('canvas-revenue-sharing').textContent = formData.revenueSharing;
+                    document.getElementById('canvas-free-model').textContent = formData.freeModel;
+                }
+                
+                // 同步数据
+                syncFormDataToCanvas();
+                
+                // 临时显示画布（覆盖CSS隐藏）
+                const originalStyle = canvasElement.style.cssText;
+                canvasElement.style.opacity = '1';
+                canvasElement.style.visibility = 'visible';
+                canvasElement.style.transform = 'translateY(0)';
+                canvasElement.style.position = 'fixed';
+                canvasElement.style.zIndex = '9999';
+                
                 // 使用html2canvas生成PNG图片
                 html2canvas(canvasElement, {
                     scale: 2,
                     useCORS: true,
                     logging: false,
-                    backgroundColor: '#ffffff'
+                    backgroundColor: '#ffffff',
+                    width: canvasElement.offsetWidth,
+                    height: canvasElement.offsetHeight
                 }).then(canvas => {
+                    // 恢复原始样式
+                    canvasElement.style.cssText = originalStyle;
+                    
                     // 创建下载链接
                     const link = document.createElement('a');
                     link.download = '商业模式画布.png';
@@ -1991,6 +2054,9 @@
                 }).catch(error => {
                     console.error('导出PNG时出错:', error);
                     alert('导出图片失败，请重试');
+                    
+                    // 恢复画布样式
+                    canvasElement.style.cssText = originalStyle;
                     
                     // 恢复按钮状态
                     exportBtn.innerHTML = '<i class="fas fa-download"></i> 导出PNG图片';
