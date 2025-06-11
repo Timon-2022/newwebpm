@@ -2,6 +2,7 @@
   "name": "business-model-assistant",
   "version": "1.0.0",
   "description": "商业模式分析助手",
+  "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
